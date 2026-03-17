@@ -14,7 +14,7 @@ def load_zones():
     for zone in zoneFiles:
         with open(zone) as zoneData:
             data = json.load(zoneData)
-            zoneName = data("$origin")
+            zoneName = data["$origin"]
             jsonZone[zoneName] = data
     return jsonZone
 
