@@ -103,7 +103,7 @@ def buildQuestion(domainName, recType):
         qbytes += bytes([length])
 
         for char in part:
-            qbytes = ord(char).to_bytes(1, byteorder='big')
+            qbytes += ord(char).to_bytes(1, byteorder='big')
         
     if recType == 'a':
         qbytes += (1).to_bytes(2, byteorder='big')
