@@ -83,7 +83,7 @@ def getQuestionDomain(data):
 def getZone(domain):
     global zoneData
 
-    zoneName = '.'.join(domain)
+    zoneName = '.'.join(domain).lower()
     return zoneData[zoneName]
 
 def getRecs(data):
