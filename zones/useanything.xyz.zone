@@ -1,9 +1,9 @@
 {
-    "$origin": "howcode.org.",
+    "$origin": "useanything.xyz.",
     "$ttl": 3600,
     "soa": {
-        "mname": "ns1.howcode.org.",
-        "rname": "admin.howcode.org.",
+        "mname": "ns1.useanything.xyz.",
+        "rname": "admin.useanything.xyz.",
         "serial": "{time}",
         "refresh": 3600,
         "retry": 600,
@@ -11,8 +11,8 @@
         "minimum": 86400
     },
     "ns": [
-        { "host": "ns1.howcode.org." },
-        { "host": "ns2.howcode.org." }
+        { "host": "ns1.useanything.xyz." },
+        { "host": "ns2.useanything.xyz." }
     ],
     "a": [
         { "name": "@", "ttl": 400, "value": "255.255.255.255" },
