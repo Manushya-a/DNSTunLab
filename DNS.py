@@ -4,6 +4,7 @@ port=53
 ip='0.0.0.0'
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 sock.bind((ip,port))
 
 def load_zones():
